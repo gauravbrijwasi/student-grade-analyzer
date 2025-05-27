@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Grade Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('https://i.pinimg.com/736x/31/6d/fb/316dfb6d9281163a19e92042bdaa611a.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-section, .results-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            color: #4a5568;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .students-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background-color 0.3s ease;
+        }
+
+        .student-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .student-item:last-child {
+            border-bottom: none;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .student-grade {
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .grade-A { background: linear-gradient(135deg, #10b981, #059669); }
+        .grade-B { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .grade-C { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .grade-D { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .grade-F { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .algorithm-info {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .algo-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .algo-title {
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .complexity {
+            font-family: 'Courier New', monospace;
+            background: #1a202c;
+            color: #68d391;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .search-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #64748b;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .download-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .success {
+            color: #10b981;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .download-section {
+                flex-direction: column;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Student Grade Analyzer</h1>
+            <p>Advanced Data Structures & Algorithms Implementation</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">📝 Student Data Entry</h2>
+                
+                <div class="form-group">
+                    <label for="studentName">Student Name:</label>
+                    <input type="text" id="studentName" placeholder="Enter student name">
+                    <div id="nameError" class="error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="studentGrade">Grade (0-100):</label>
+                    <input type="number" id="studentGrade" min="0" max="100" placeholder="Enter grade">
+                    <div id="gradeError" class="error"></div>
+                </div>
+
+                <button class="btn" onclick="addStudent()">➕ Add Student</button>
+                <button class="btn btn-success" onclick="generateSampleData()">🎲 Generate Sample Data</button>
+                <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All</button>
+
+                <div class="search-section">
+                    <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search students..." oninput="searchStudents()">
+                    <select id="sortMethod" onchange="sortStudents()">
+                        <option value="name">Sort by Name</option>
+                        <option value="grade">Sort by Grade</option>
+                        <option value="gradeDesc">Sort by Grade (Desc)</option>
+                    </select>
+                </div>
+
+                <div class="students-list" id="studentsList">
+                    <div class="no-results">No students added yet</div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h2 class="section-title">📊 Statistical Analysis</h2>
+                
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalStudents">0</div>
+                        <div class="stat-label">Total Students</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="averageGrade">0</div>
+                        <div class="stat-label">Average Grade</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="highestGrade">0</div>
+                        <div class="stat-label">Highest Grade</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="lowestGrade">0</div>
+                        <div class="stat-label">Lowest Grade</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="medianGrade">0</div>
+                        <div class="stat-label">Median Grade</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="passRate">0%</div>
+                        <div class="stat-label">Pass Rate (≥60)</div>
+                    </div>
+                </div>
+
+                <div class="download-section">
+                    <button class="btn btn-success" onclick="downloadCSV()">📊 Download CSV</button>
+                    <button class="btn btn-success" onclick="downloadJSON()">💾 Download JSON</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="algorithm-info">
+            <h2 class="section-title">🧮 DAA Concepts Implemented</h2>
+            
+            <div class="algo-section">
+                <div class="algo-title">1. Sorting Algorithms</div>
+                <p><strong>Quick Sort:</strong> Used for sorting students by name and grade</p>
+                <div class="complexity">Time: O(n log n) average, O(n²) worst | Space: O(log n)</div>
+            </div>
+
+            <div class="algo-section">
+                <div class="algo-title">2. Search Algorithms</div>
+                <p><strong>Linear Search:</strong> Implemented for student name searching with partial matching</p>
+                <div class="complexity">Time: O(n) | Space: O(1)</div>
+            </div>
+
+            <div class="algo-section">
+                <div class="algo-title">3. Statistical Algorithms</div>
+                <p><strong>Mean, Median, Mode:</strong> Efficient calculation of statistical measures</p>
+                <div class="complexity">Time: O(n) for mean, O(n log n) for median | Space: O(1)</div>
+            </div>
+
+            <div class="algo-section">
+                <div class="algo-title">4. Data Structures</div>
+                <p><strong>Arrays & Objects:</strong> Dynamic array management with object-oriented student records</p>
+                <div class="complexity">Access: O(1) | Search: O(n) | Insert/Delete: O(1) amortized</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Student data structure
+        class Student {
+            constructor(name, grade) {
+                this.name = name;
+                this.grade = grade;
+                this.letterGrade = this.calculateLetterGrade();
+                this.timestamp = new Date();
+            }
+
+            calculateLetterGrade() {
+                if (this.grade >= 90) return 'A';
+                if (this.grade >= 80) return 'B';
+                if (this.grade >= 70) return 'C';
+                if (this.grade >= 60) return 'D';
+                return 'F';
+            }
+        }
+
+        // Global students array
+        let students = [];
+        let originalStudents = [];
+
+        // DAA Implementation: Quick Sort Algorithm
+        function quickSort(arr, key, ascending = true) {
+            if (arr.length <= 1) return arr;
+
+            const pivot = arr[Math.floor(arr.length / 2)];
+            const left = [];
+            const right = [];
+            const equal = [];
+
+            for (let student of arr) {
+                const compareValue = key === 'name' ? student[key].toLowerCase() : student[key];
+                const pivotValue = key === 'name' ? pivot[key].toLowerCase() : pivot[key];
+
+                if (compareValue < pivotValue) {
+                    left.push(student);
+                } else if (compareValue > pivotValue) {
+                    right.push(student);
+                } else {
+                    equal.push(student);
+                }
+            }
+
+            if (ascending) {
+                return [...quickSort(left, key, ascending), ...equal, ...quickSort(right, key, ascending)];
+            } else {
+                return [...quickSort(right, key, !ascending), ...equal, ...quickSort(left, key, !ascending)];
+            }
+        }
+
+        // DAA Implementation: Linear Search with Pattern Matching
+        function linearSearch(arr, searchTerm) {
+            const results = [];
+            const term = searchTerm.toLowerCase();
+
+            for (let i = 0; i < arr.length; i++) {
+                if (arr[i].name.toLowerCase().includes(term)) {
+                    results.push(arr[i]);
+                }
+            }
+
+            return results;
+        }
+
+        // DAA Implementation: Statistical Calculations
+        function calculateStatistics(grades) {
+            if (grades.length === 0) return null;
+
+            // Mean calculation - O(n)
+            const sum = grades.reduce((acc, grade) => acc + grade, 0);
+            const mean = sum / grades.length;
+
+            // Median calculation - O(n log n)
+            const sorted = [...grades].sort((a, b) => a - b);
+            const median = sorted.length % 2 === 0
+                ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+                : sorted[Math.floor(sorted.length / 2)];
+
+            // Min/Max - O(n)
+            const min = Math.min(...grades);
+            const max = Math.max(...grades);
+
+            // Pass rate calculation
+            const passCount = grades.filter(grade => grade >= 60).length;
+            const passRate = (passCount / grades.length) * 100;
+
+            return { mean, median, min, max, passRate };
+        }
+
+        // Input validation
+        function validateInput(name, grade) {
+            let isValid = true;
+            
+            // Clear previous errors
+            document.getElementById('nameError').textContent = '';
+            document.getElementById('gradeError').textContent = '';
+
+            if (!name || name.trim().length < 2) {
+                document.getElementById('nameError').textContent = 'Name must be at least 2 characters long';
+                isValid = false;
+            }
+
+            if (grade < 0 || grade > 100 || isNaN(grade)) {
+                document.getElementById('gradeError').textContent = 'Grade must be between 0 and 100';
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Add student function
+        function addStudent() {
+            const nameInput = document.getElementById('studentName');
+            const gradeInput = document.getElementById('studentGrade');
+            
+            const name = nameInput.value.trim();
+            const grade = parseFloat(gradeInput.value);
+
+            if (!validateInput(name, grade)) return;
+
+            // Check for duplicate names
+            if (students.some(student => student.name.toLowerCase() === name.toLowerCase())) {
+                document.getElementById('nameError').textContent = 'Student name already exists';
+                return;
+            }
+
+            const student = new Student(name, grade);
+            students.push(student);
+            originalStudents = [...students];
+
+            // Clear inputs
+            nameInput.value = '';
+            gradeInput.value = '';
+
+            // Update display
+            updateDisplay();
+            updateStatistics();
+
+            // Show success message
+            showMessage('Student added successfully!', 'success');
+        }
+
+        // Generate sample data
+        function generateSampleData() {
+            const sampleNames = [
+                'Alice Johnson', 'Bob Smith', 'Charlie Brown', 'Diana Prince',
+                'Edward Norton', 'Fiona Green', 'George Wilson', 'Hannah Lee',
+                'Ian Clarke', 'Julia Roberts', 'Kevin Hart', 'Lisa Wong'
+            ];
+
+            students = [];
+            originalStudents = [];
+
+            sampleNames.forEach(name => {
+                const grade = Math.floor(Math.random() * 41) + 60; // 60-100
+                students.push(new Student(name, grade));
+            });
+
+            originalStudents = [...students];
+            updateDisplay();
+            updateStatistics();
+            showMessage('Sample data generated successfully!', 'success');
+        }
+
+        // Clear all data
+        function clearAllData() {
+            if (students.length === 0) {
+                showMessage('No data to clear!', 'error');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to clear all student data?')) {
+                students = [];
+                originalStudents = [];
+                updateDisplay();
+                updateStatistics();
+                showMessage('All data cleared!', 'success');
+            }
+        }
+
+        // Sort students
+        function sortStudents() {
+            const sortMethod = document.getElementById('sortMethod').value;
+            let sortedStudents;
+
+            switch (sortMethod) {
+                case 'name':
+                    sortedStudents = quickSort([...students], 'name', true);
+                    break;
+                case 'grade':
+                    sortedStudents = quickSort([...students], 'grade', true);
+                    break;
+                case 'gradeDesc':
+                    sortedStudents = quickSort([...students], 'grade', false);
+                    break;
+                default:
+                    sortedStudents = [...students];
+            }
+
+            students = sortedStudents;
+            updateDisplay();
+        }
+
+        // Search students
+        function searchStudents() {
+            const searchTerm = document.getElementById('searchInput').value;
+            
+            if (searchTerm === '') {
+                students = [...originalStudents];
+            } else {
+                students = linearSearch(originalStudents, searchTerm);
+            }
+            
+            updateDisplay();
+        }
+
+        // Update display
+        function updateDisplay() {
+            const container = document.getElementById('studentsList');
+            
+            if (students.length === 0) {
+                container.innerHTML = '<div class="no-results">No students found</div>';
+                return;
+            }
+
+            container.innerHTML = students.map(student => `
+                <div class="student-item fade-in">
+                    <span class="student-name">${student.name}</span>
+                    <span class="student-grade grade-${student.letterGrade}">${student.grade} (${student.letterGrade})</span>
+                </div>
+            `).join('');
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const grades = originalStudents.map(s => s.grade);
+            const stats = calculateStatistics(grades);
+
+            if (!stats) {
+                document.getElementById('totalStudents').textContent = '0';
+                document.getElementById('averageGrade').textContent = '0';
+                document.getElementById('highestGrade').textContent = '0';
+                document.getElementById('lowestGrade').textContent = '0';
+                document.getElementById('medianGrade').textContent = '0';
+                document.getElementById('passRate').textContent = '0%';
+                return;
+            }
+
+            document.getElementById('totalStudents').textContent = originalStudents.length;
+            document.getElementById('averageGrade').textContent = stats.mean.toFixed(1);
+            document.getElementById('highestGrade').textContent = stats.max;
+            document.getElementById('lowestGrade').textContent = stats.min;
+            document.getElementById('medianGrade').textContent = stats.median.toFixed(1);
+            document.getElementById('passRate').textContent = stats.passRate.toFixed(1) + '%';
+        }
+
+        // Show message function
+        function showMessage(message, type) {
+            // Remove existing messages
+            const existingMessages = document.querySelectorAll('.message');
+            existingMessages.forEach(msg => msg.remove());
+
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${type}`;
+            messageEl.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #dc2626)'};
+            `;
+            messageEl.textContent = message;
+            
+            document.body.appendChild(messageEl);
+            
+            setTimeout(() => {
+                if (messageEl.parentNode) {
+                    messageEl.remove();
+                }
+            }, 3000);
+        }
+
+        // Download CSV
+        function downloadCSV() {
+            if (originalStudents.length === 0) {
+                showMessage('No data to download!', 'error');
+                return;
+            }
+
+            const headers = ['Name', 'Grade', 'Letter Grade', 'Status'];
+            const csvContent = [
+                headers.join(','),
+                ...originalStudents.map(student => [
+                    `"${student.name}"`,
+                    student.grade,
+                    student.letterGrade,
+                    student.grade >= 60 ? 'Pass' : 'Fail'
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `student_grades_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showMessage('CSV downloaded successfully!', 'success');
+        }
+
+        // Download JSON
+        function downloadJSON() {
+            if (originalStudents.length === 0) {
+                showMessage('No data to download!', 'error');
+                return;
+            }
+
+            const grades = originalStudents.map(s => s.grade);
+            const stats = calculateStatistics(grades);
+            
+            const data = {
+                exportDate: new Date().toISOString(),
+                totalStudents: originalStudents.length,
+                statistics: stats,
+                students: originalStudents.map(student => ({
+                    name: student.name,
+                    grade: student.grade,
+                    letterGrade: student.letterGrade,
+                    status: student.grade >= 60 ? 'Pass' : 'Fail'
+                }))
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `student_grades_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showMessage('JSON downloaded successfully!', 'success');
+        }
+
+        // Add Enter key support for form inputs
+        document.getElementById('studentName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('studentGrade').focus();
+            }
+        });
+
+        document.getElementById('studentGrade').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addStudent();
+            }
+        });
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDisplay();
+            updateStatistics();
+        });
+    </script>
+</body>
+</html>
